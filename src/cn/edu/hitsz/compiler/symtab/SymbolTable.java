@@ -26,12 +26,8 @@ public class SymbolTable {
      * @return 该符号在符号表中的条目
      * @throws RuntimeException 该符号在表中不存在
      */
-    public SymbolTableEntry get(String text) throws RuntimeException{
-        if(has(text)){
+    public SymbolTableEntry get(String text) {
             return symbolTableEntryMap.get(text);
-        }else {
-            throw new RuntimeException("该符号在表中不存在");
-        }
     }
 
     /**
@@ -42,13 +38,7 @@ public class SymbolTable {
      * @throws RuntimeException 该符号已在表中存在
      */
     public SymbolTableEntry add(String text) throws RuntimeException{
-        if(!has(text)){
-            SymbolTableEntry symbolTableEntry = new SymbolTableEntry(text);
-            symbolTableEntryMap.put(text, symbolTableEntry);
-            return symbolTableEntry;
-        }else {
-            throw new RuntimeException("该符号已在表中存在");
-        }
+        return symbolTableEntryMap.put(text,new SymbolTableEntry(text));
     }
 
     /**
