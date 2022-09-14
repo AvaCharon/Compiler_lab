@@ -21,7 +21,7 @@ import java.util.stream.StreamSupport;
 public class LexicalAnalyzer {
     private final SymbolTable symbolTable;
 
-    private BufferedReader bufferedReader = null;
+    private static StringBuffer inStrings = new StringBuffer();
 
     public LinkedList<Token> tokens = new LinkedList<>();
 
@@ -42,10 +42,24 @@ public class LexicalAnalyzer {
         // TODO: 词法分析前的缓冲区实现
         // 可自由实现各类缓冲区
         // 或直接采用完整读入方法
+        BufferedReader bufferedReader = null;
         try{
             bufferedReader = new BufferedReader(new FileReader(path));
+            String line;
+            while((line=bufferedReader.readLine())!=null)
+            {
+                inStrings.append(line);
+            }
         }catch (IOException e){
             e.printStackTrace();
+        }finally {
+            try {
+                if(bufferedReader!=null){
+                    bufferedReader.close();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -56,77 +70,67 @@ public class LexicalAnalyzer {
     public void run() {
         // TODO: 自动机实现的词法分析过程
         StringBuffer strToken = new StringBuffer();
-        int r = 0;
         char ch ;
-        try {
-            while((r=bufferedReader.read())!=-1){
-                ch = (char) r;
-                if(isLetter(ch)){
-                    strToken.append(ch);
-                    while((r=bufferedReader.read())!=-1){
-                        ch = (char) r;
-                        if(isLetter(ch)||isDigit(ch)){
-                            strToken.append(ch);
-                        }else{
-                            Token token = switch (isRetain(strToken)) {
-                                case 0 -> {
-                                    symbolTable.add(strToken.toString());
-                                    yield Token.normal("id", strToken.toString());
-                                }
-                                case 1 -> Token.simple("int");
-                                case 2 -> Token.simple("return");
-                                default -> {
-                                    symbolTable.add(strToken.toString());
-                                    yield Token.normal("id", strToken.toString());
-                                }
-                            };
-                            tokens.add(token);
-                            strToken.delete(0,strToken.length());
-                            break;
-                        }
+        for(int i=0;i<inStrings.length();i++){
+            ch = inStrings.charAt(i);
+            if(isLetter(ch)){
+                strToken.append(ch);
+                i++;
+                for(;i<inStrings.length();i++){
+                    ch = inStrings.charAt(i);
+                    if(isLetter(ch)||isDigit(ch)){
+                        strToken.append(ch);
+                    }else{
+                        Token token = switch (isRetain(strToken)) {
+                            case 0 -> {
+                                symbolTable.add(strToken.toString());
+                                yield Token.normal("id", strToken.toString());
+                            }
+                            case 1 -> Token.simple("int");
+                            case 2 -> Token.simple("return");
+                            default -> {
+                                symbolTable.add(strToken.toString());
+                                yield Token.normal("id", strToken.toString());
+                            }
+                        };
+                        tokens.add(token);
+                        strToken.delete(0,strToken.length());
+                        break;
                     }
-                }
-                if(isDigit(ch)){
-                    strToken.append(ch);
-                    while((r=bufferedReader.read())!=-1){
-                        ch = (char) r;
-                        if(isDigit(ch)){
-                            strToken.append(ch);
-                        }else{
-                            Token token = Token.normal("IntConst",strToken.toString());
-                            tokens.add(token);
-                            strToken.delete(0,strToken.length());
-                            break;
-                        }
-                    }
-                }
-                if(isOperator(ch)){
-                    Token token = switch (ch) {
-                        case '+' -> Token.simple("+");
-                        case '-' -> Token.simple("-");
-                        case '*' -> Token.simple("*");
-                        case '/' -> Token.simple("/");
-                        case '=' -> Token.simple("=");
-                        case '(' -> Token.simple("(");
-                        case ')' -> Token.simple(")");
-                        case ';' -> Token.simple("Semicolon");
-                        default -> throw new RuntimeException("非法字符");
-                    };
-                    tokens.add(token);
                 }
             }
-            tokens.add(Token.eof());
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            try{
-                if (bufferedReader != null) {
-                    bufferedReader.close();
+            if(isDigit(ch)){
+                strToken.append(ch);
+                i++;
+                for(;i<inStrings.length();i++){
+                    ch = inStrings.charAt(i);
+                    if(isDigit(ch)){
+                        strToken.append(ch);
+                    }else{
+                        Token token = Token.normal("IntConst",strToken.toString());
+                        tokens.add(token);
+                        strToken.delete(0,strToken.length());
+                        break;
+                    }
                 }
-            }catch (Exception e2){
-                e2.printStackTrace();
+            }
+            if(isOperator(ch)){
+                Token token = switch (ch) {
+                    case '+' -> Token.simple("+");
+                    case '-' -> Token.simple("-");
+                    case '*' -> Token.simple("*");
+                    case '/' -> Token.simple("/");
+                    case '=' -> Token.simple("=");
+                    case '(' -> Token.simple("(");
+                    case ')' -> Token.simple(")");
+                    case ';' -> Token.simple("Semicolon");
+                    default -> throw new RuntimeException("非法字符");
+                };
+                tokens.add(token);
             }
         }
+        tokens.add(Token.eof());
+
     }
 
     //判断是否是字母
