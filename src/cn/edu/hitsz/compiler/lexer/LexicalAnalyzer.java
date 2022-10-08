@@ -135,7 +135,7 @@ public class LexicalAnalyzer {
 
     //判断是否是字母
     public boolean isLetter(char ch){
-        if(ch>='a' && ch<='z'){
+        if((ch>='a' && ch<='z') || (ch>='A' && ch<='Z')){
             return true;
         }
         return false;
