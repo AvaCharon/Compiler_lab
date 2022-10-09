@@ -114,7 +114,6 @@ public class SyntaxAnalyzer {
             switch (action.getKind()){
                 case Accept -> {
                     callWhenInAccept(statusStack.peek());
-                    System.out.println("accept");
                     return;
                 }
                 case Shift ->{
@@ -124,9 +123,8 @@ public class SyntaxAnalyzer {
                     statusStack.push(action.getStatus());
                 }
                 case Reduce -> {
-                    Production production = action.getProduction();
+                    final var production = action.getProduction();
                     callWhenInReduce(statusStack.peek(),production);
-                    System.out.println(production.toString());
                     for(int i=0;i<production.body().size();i++){
                         symbolStack.pop();
                         statusStack.pop();
