@@ -130,7 +130,6 @@ public class LexicalAnalyzer {
             }
         }
         tokens.add(Token.eof());
-
     }
 
     //判断是否是字母
